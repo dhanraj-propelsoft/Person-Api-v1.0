@@ -43,25 +43,25 @@ class PersonService
     }
     public function findCredential($datas)
     {
-            Log::info('PersonService > findCredential function Inside.' . json_encode($datas));
-            $datas = (object) $datas;
-            $checkPersonMobile = $this->personInterface->checkPersonByMobileNo($datas->mobileNumber);
-            if (!empty($checkPersonMobile)) {
-                $checkPersonEmail = $this->personInterface->checkPersonEmailByUid($datas->email, $checkPersonMobile->uid);
-            }
-            $personMobile = $this->personInterface->getPersonDataByMobileNo($datas->mobileNumber);
-            dd($personMobile);  
-            $personEmail = $this->personInterface->getPersonDataByEmail($datas->email);
+        Log::info('PersonService > findCredential function Inside.' . json_encode($datas));
+        $datas = (object) $datas;
+        $checkPersonMobile = $this->personInterface->checkPersonByMobileNo($datas->mobileNumber);
+        if (!empty($checkPersonMobile)) {
+            $checkPersonEmail = $this->personInterface->checkPersonEmailByUid($datas->email, $checkPersonMobile->uid);
+        }
+        $personMobile = $this->personInterface->getPersonDataByMobileNo($datas->mobileNumber);
 
-            if ($checkPersonMobile && $checkPersonEmail) {
-                $result = ['type' => 1, 'personData' => $datas, 'uid' => $checkPersonMobile->uid, 'status' => 'ExactPerson'];
-            } else if ($personMobile !== null || $personEmail!== null) {
-                $personData=['personMobile'=>$personMobile->mobile,'personEmail'=>$personEmail->email];
-                $result = ['type' => 2, 'personData' => $personData, 'status' => 'mappedPerson'];
-            } else {
-                $result = ['type' => 3, 'status' => 'freshMember'];
-            }
-            return $this->commonService->sendResponse($result,);
+        $personEmail = $this->personInterface->getPersonDataByEmail($datas->email);
+
+        if ($checkPersonMobile && $checkPersonEmail) {
+            $result = ['type' => 1, 'personData' => $datas, 'uid' => $checkPersonMobile->uid, 'status' => 'ExactPerson'];
+        } else if ($personMobile !== null || $personEmail !== null) {
+            $personData = ['personMobile' => $personMobile->mobile, 'personEmail' => $personEmail->email];
+            $result = ['type' => 2, 'personData' => $personData, 'status' => 'mappedPerson'];
+        } else {
+            $result = ['type' => 3, 'status' => 'freshMember'];
+        }
+        return $this->commonService->sendResponse($result, true);
     }
     public function findMobileNumber($datas)
     {
@@ -216,9 +216,9 @@ class PersonService
         $model->middle_name = isset($datas->middleName) ? $datas->middleName : null;
         $model->last_name = isset($datas->lastName) ? $datas->lastName : null;
         $model->nick_name = isset($datas->nickName) ? $datas->nickName : null;
-        $date =null;
-        if(isset($datas->dob)){
-        $date = Carbon::createFromFormat('d-m-Y', $datas->dob)->format('Y-m-d');
+        $date = null;
+        if (isset($datas->dob)) {
+            $date = Carbon::createFromFormat('d-m-Y', $datas->dob)->format('Y-m-d');
         }
         $model->dob = $date;
         $model->birth_place = isset($datas->birthCity) ? $datas->birthCity : null;
@@ -703,7 +703,8 @@ class PersonService
 
         Log::info('PersonService > checkMemberOrPerson function Inside.' . json_encode($datas));
         $datas = (object) $datas;
-        $checkMember = $this->personInterface->checkMemberByUid($datas->uid);
+        $checkMember = $this->memberInterface->findMemberDataByUid($datas->uid);
+
         if ($checkMember) {
             $personName = $this->personInterface->getPersonDatasByUid($datas->uid);
             return $this->commonService->sendResponse($personName, 'ExactMember');
@@ -714,14 +715,20 @@ class PersonService
     }
     public function personMobileOtp($datas)
     {
+
         Log::info('PersonService > personMobileOtp function Inside.' . json_encode($datas));
         $datas = (object) $datas;
         $otp = random_int(1000, 9999);
         $setOtpMobile = $this->personInterface->setOtpMobileNo($datas->uid, $datas->mobileNumber, $otp);
-        $smsTypeModel = $this->smsInterface->findSmsTypeByName('PersonToMember');
-        $smsHistoryModel = $this->smsService->storeSms($datas->mobileNumber, $smsTypeModel->id, $otp, $datas->uid);
-        Log::info('PersonService > personMobileOtp function Return.' . json_encode($datas));
-        return $this->commonService->sendResponse($datas, 'OtpSuccesfully');
+        if ($setOtpMobile) {
+            $smsTypeModel = $this->smsInterface->findSmsTypeByName('PersonToMember');
+            $smsHistoryModel = $this->smsService->storeSms($datas->mobileNumber, $smsTypeModel->id, $otp, $datas->uid);
+            Log::info('PersonService > personMobileOtp function Return.' . json_encode($datas));
+            return $this->commonService->sendResponse($datas, 'OtpSuccesfully');
+        } else {
+            return $this->commonService->sendError('MobileNo Not Found', false);
+        }
+
     }
     public function checkPersonEmail($datas)
     {
@@ -821,16 +828,18 @@ class PersonService
 
         Log::info('PersonService > personProfileDetails function Inside.' . json_encode($datas));
         $datas = (object) $datas;
-        $personDetails = $this->personInterface->getPersonPrimaryDataByUid($datas->uid);
-        $personAddressByUid = $this->personInterface->personAddressByUid($datas->uid);
+        $uid = $datas->uid;
+        $personDetails = $this->personInterface->getPersonPrimaryDataByUid($uid);
+        $personAddress = $this->personInterface->personAddressByUid($uid);
+
         $personMasterData = $this->commonService->getPersonMasterData();
-        $secondaryMobile = $this->personInterface->personSecondaryMobileByUid($datas->uid);
-        $secondaryEmail = $this->personInterface->personSecondaryEmailByUid($datas->uid);
+        $secondaryMobile = $this->personInterface->personSecondaryMobileByUid($uid);
+        $secondaryEmail = $this->personInterface->personSecondaryEmailByUid($uid);
 
         Log::info('PersonService > personProfileDetails function Return.' . json_encode($personMasterData));
         return [
             'personDetail' => $personDetails,
-            'personAddressByUid' => $personAddressByUid,
+            'personAddressByUid' => $personAddress,
             'personMasterData' => $personMasterData,
             'secondaryMobile' => $secondaryMobile,
             'secondaryEmail' => $secondaryEmail,
@@ -838,11 +847,14 @@ class PersonService
     }
     public function getPersonAllDetails($datas)
     {
+
         Log::info('PersonService > getPersonAllDetails function Inside.' . json_encode($datas));
         $datas = (object) $datas;
         $personMobile = $this->personInterface->getPersonDataByMobileNo($datas->mobileNumber);
+
         $personEmail = $this->personInterface->getPersonDataByEmail($datas->email);
-        $personData = ['personMobile' => $personMobile->mobile, 'personEmail' => $personEmail->email];
+
+        $personData = ['personMobile' => $personMobile, 'personEmail' => $personEmail];
         return $this->commonService->sendResponse($personData, true);
     }
     public function memberAllDetails($datas)
@@ -883,12 +895,12 @@ class PersonService
             : ['Member' => 'This Number  Exists in Other Member', 'type' => 1];
 
         }
-        return $this->commonService->sendResponse($data, true);
+        return $this->commonService->sendResponse($result, true);
     }
     public function convertSecondaryMobileNo($datas)
     {
         $model = new PersonMobile();
-        $model->uid = $datas->uid;
+        $model->uid = $datas->personUid;
         $model->country_id = isset($datas->countryId) ? $datas->countryId : null;
         $model->mobile_no = $datas->mobileNo;
         $model->otp_received = $this->sendingOtp();
@@ -898,10 +910,12 @@ class PersonService
     }
     public function resendOtpForMobile($datas)
     {
+
         $datas = (object) $datas;
         $model = $this->personInterface->getPersonMobileNoByUid($datas->uid, $datas->mobile_no);
         if ($model) {
             $otp = $this->sendingOtp();
+
             $setOtpMobile = $this->setOtpMobileNo($datas->uid, $datas->mobile_no, $otp);
             $data = ['Message' => ' Resend OTP Successfully', 'type' => 1];
         } else {
@@ -925,6 +939,7 @@ class PersonService
     {
 
         $otpValidate = $this->OtpValidateSecondaryMobileNo($datas);
+
         $datas = (object) $datas;
         if ($otpValidate == 1) {
             $perviousMobileNo = $this->personInterface->getPerviousPrimaryMobileNo($datas->personUid);
@@ -938,8 +953,11 @@ class PersonService
     }
     public function OtpValidateSecondaryMobileNo($datas)
     {
+
         $datas = (object) $datas;
+
         $checkMobile = $this->personInterface->getSecondaryMobileNoByUid($datas->mobileNo, $datas->personUid);
+
         if ($checkMobile->otp_received == $datas->otp) {
             $result = $this->personInterface->setStatusForMobileNo($checkMobile->uid, $checkMobile->mobile_no);
         } else {
@@ -954,6 +972,7 @@ class PersonService
         $checkEmail = $this->personInterface->checkSecondaryEmailByUid($datas->email, $datas->personUid);
         if (empty($checkPrimaryEmail) && empty($checkEmail)) {
             $convertEmail = $this->convertSecondaryEmail($datas);
+
             $result = $this->personInterface->addSecondaryEmailForMember($convertEmail);
         } else {
             $result = $checkPrimaryEmail
@@ -968,7 +987,7 @@ class PersonService
         $model->uid = $datas->personUid;
         $model->email = $datas->email;
         $model->otp_received = $this->sendingOtp();
-        $model->email_cachet_id = isset($datas->cachetId) ? $datas->cachetId : null;
+        $model->email_cachet_id = isset($datas->cachetId) ? $datas->cachetId : 2;
         $model->pfm_active_status_id = isset($datas->activeStatusId) ? $datas->activeStatusId : 2;
 
         return $model;
@@ -1004,6 +1023,7 @@ class PersonService
     }
     public function makeAsPrimaryEmailOtpValidate($datas)
     {
+
         $otpValidate = $this->OtpValidateForSecondaryEmail($datas);
         $datas = (object) $datas;
         if ($otpValidate == 1) {
@@ -1042,10 +1062,12 @@ class PersonService
     }
     public function resendOtpForSecondaryEmail($datas)
     {
+
         $datas = (object) $datas;
         $otp = $this->sendingOtp();
         $resendOtpSecondaryEmail = $this->personInterface->setOtpForPersonPrimaryEmail($datas->personUid, $datas->email, $otp);
-        if ($resendOtp) {
+
+        if ($resendOtpSecondaryEmail) {
             $result = ['Message' => 'Resend Otp Succesfully', 'type' => 1];
         } else {
             $result = ['Message' => 'Resend  Failed', 'type' => 2];

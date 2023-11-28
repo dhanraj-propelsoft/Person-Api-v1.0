@@ -106,14 +106,14 @@ class CommonService
     public function getPersonMasterData()
     {
 
-      $saluationLists = $this->getSalutation();
-      $bloodGroupLists = $this->getAllBloodGroup();
-      $genderLists = $this->getAllGender();
-      $maritalStatusLists = $this->getMaritalStatus();
-      $addressOfLists = $this->getAddrerssType();
-      $languageLists = $this->getLanguage();
-      $idDocumentTypes = $this->getAllDocumentType();
-      $bankAccountTypes = $this->getAllBankAccountType();
+      $saluationLists = $this->commonInterface->getSalutation();
+      $bloodGroupLists = $this->commonInterface->getAllBloodGroup();
+      $genderLists = $this->commonInterface->getAllGender();
+      $maritalStatusLists = $this->commonInterface->getMaritalStatus();
+      $addressOfLists = $this->commonInterface->getAddrerssType();
+      $languageLists = $this->commonInterface->getLanguage();
+      $idDocumentTypes = $this->commonInterface->getAllDocumentType();
+      $bankAccountTypes = $this->commonInterface->getAllBankAccountType();
       $datas = [
         'saluationLists' => $saluationLists,
         'bloodGroupLists' => $bloodGroupLists,

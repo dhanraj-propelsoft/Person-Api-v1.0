@@ -34,7 +34,7 @@ class MemberRepository implements MemberInterface
     }
     public function findMemberDataByUid($uid)
     {
-        return Member::where('uid', $uid)->whereNull('deleted_at')->first();
+        return Member::where('uid', $uid)->whereNull('deleted_flag')->first();
     }
     public function verifyMemberForMobile($datas)
     {
