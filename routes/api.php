@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
+| Here is where you can register API routes for your application.These
 | routes are loaded by the RouteServiceProvider within a group which
 | is assigned the "api" middleware group. Enjoy building your API!
 |
@@ -43,3 +43,8 @@ Route::post('resendOtpForSecondaryEmail', [PersonController::class, 'resendOtpFo
 Route::post('OtpValidateSecondaryMobileNo', [PersonController::class, 'OtpValidateSecondaryMobileNo'])->name('OtpValidateSecondaryMobileNo');
 Route::post('OtpValidateForSecondaryEmail', [PersonController::class, 'OtpValidateForSecondaryEmail'])->name('OtpValidateForSecondaryEmail');
 Route::post('otpValidationForMobile', [PersonController::class, 'otpValidationForMobile'])->name('otpValidationForMobile');
+Route::post('findExactPersonWithEmailAndMobile', [PersonController::class, 'findExactPersonWithEmailAndMobile'])->name('findExactPersonWithEmailAndMobile');
+Route::post('findMemberDataByUid', [PersonController::class, 'findMemberDataByUid'])->name('findMemberDataByUid');
+Route::post('getPrimaryMobileAndEmailbyUid', [PersonController::class, 'getPrimaryMobileAndEmailbyUid'])->name('getPrimaryMobileAndEmailbyUid');
+Route::post('personProfileDatas', [PersonController::class, 'personProfileDatas'])->name('personProfileDatas');
+

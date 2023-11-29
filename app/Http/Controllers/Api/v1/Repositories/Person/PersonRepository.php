@@ -35,6 +35,7 @@ class PersonRepository implements PersonInterface
     }
     public function getPersonDatasByUid($uid)
     {
+
         return PersonDetails::where('uid', $uid)->whereNull('deleted_flag')->first();
     }
     public function getPersonEmailByUid($uid)
@@ -430,5 +431,18 @@ class PersonRepository implements PersonInterface
     public function getMobileNoByUid($mobile, $uid)
     {
         return PersonMobile::where(['uid' => $uid, 'mobile_no' => $mobile, 'mobile_cachet_id' => 1])->first();
+    }
+    public function findExactPersonWithEmailAndMobile($email, $mobile)
+    {
+        return Person::with(['mobile', 'email'])
+        ->whereHas('mobile', function ($query) use ($mobile) {
+            $query->where('mobile_no', $mobile)
+                  ->whereIn('mobile_cachet_id', [1, 2]);
+        })
+        ->whereHas('email', function ($query) use ($email) {
+            $query->where('email', $email)
+                  ->whereIn('email_cachet_id', [1, 2]);
+        })
+        ->first();
     }
 }

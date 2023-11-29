@@ -48,6 +48,7 @@ interface PersonInterface
     public function getPerviousPrimaryEmail($uid);
     public function setPirmaryEmail($model);
     public function getMobileNoByUid($mobile,$uid);
+    public function findExactPersonWithEmailAndMobile($email, $mobile);
 
 
 

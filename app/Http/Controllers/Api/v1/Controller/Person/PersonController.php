@@ -25,7 +25,7 @@ class PersonController extends Controller
 
     public function findMobileNumber(Request $request): JsonResponse
     {
-       
+
         Log::info('PersonController > findMobileNumber function Inside.' . json_encode($request->all()));
         $response = $this->personService->findMobileNumber($request->all());
         Log::info('PersonController > findMobileNumber function Return.' . json_encode($response));
@@ -41,7 +41,7 @@ class PersonController extends Controller
     }
     public function storeTempPerson(Request $request): JsonResponse
     {
-       
+
         Log::info('PersonController > storeTempPerson function Inside.' . json_encode($request->all()));
         $response = $this->personService->storeTempPerson($request->all());
         Log::info('PersonController > storeTempPerson function Return.' . json_encode($response));
@@ -84,7 +84,7 @@ class PersonController extends Controller
     }
     public function personDatas(Request $request): JsonResponse
     {
-   
+
         Log::info('PersonController > personDatas function Inside.' . json_encode($request->all()));
         $response = $this->personService->personDatas($request->all());
         Log::info('PersonController > personDatas function Return.' . json_encode($response));
@@ -231,6 +231,34 @@ class PersonController extends Controller
         Log::info('PersonController > otpValidationForMobile function Inside.' . json_encode($request->all()));
         $response = $this->personService->otpValidationForMobile($request->all());
         Log::info('PersonController > otpValidationForMobile function Return.' . json_encode($response));
+        return $response;
+    }
+    public function findExactPersonWithEmailAndMobile(Request $request)
+    {
+        Log::info('PersonController > findExactPersonWithEmailAndMobile function Inside.' . json_encode($request->all()));
+        $response = $this->personService->findExactPersonWithEmailAndMobile($request->all());
+        Log::info('PersonController > findExactPersonWithEmailAndMobile function Return.' . json_encode($response));
+        return $response;
+    }
+    public function findMemberDataByUid(Request $request)
+    {
+        Log::info('PersonController > findMemberDataByUid function Inside.' . json_encode($request->all()));
+        $response = $this->personService->findMemberDataByUid($request->all());
+        Log::info('PersonController > findMemberDataByUid function Return.' . json_encode($response));
+        return $response;
+    }
+    public function getPrimaryMobileAndEmailbyUid(Request $request)
+    {
+        Log::info('PersonController > getPrimaryMobileAndEmailbyUid function Inside.' . json_encode($request->all()));
+        $response = $this->personService->getPrimaryMobileAndEmailbyUid($request->all());
+        Log::info('PersonController > getPrimaryMobileAndEmailbyUid function Return.' . json_encode($response));
+        return $response;
+    }
+    public function personProfileDatas(Request $request)
+    {
+        Log::info('PersonController > personProfileDatas function Inside.' . json_encode($request->all()));
+        $response = $this->personService->personProfileDatas($request->all());
+        Log::info('PersonController > personProfileDatas function Return.' . json_encode($response));
         return $response;
     }
 }

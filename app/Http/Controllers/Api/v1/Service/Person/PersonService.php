@@ -831,19 +831,19 @@ class PersonService
         $uid = $datas->uid;
         $personDetails = $this->personInterface->getPersonPrimaryDataByUid($uid);
         $personAddress = $this->personInterface->personAddressByUid($uid);
-
         $personMasterData = $this->commonService->getPersonMasterData();
         $secondaryMobile = $this->personInterface->personSecondaryMobileByUid($uid);
         $secondaryEmail = $this->personInterface->personSecondaryEmailByUid($uid);
 
         Log::info('PersonService > personProfileDetails function Return.' . json_encode($personMasterData));
-        return [
+        $datas= [
             'personDetail' => $personDetails,
             'personAddressByUid' => $personAddress,
             'personMasterData' => $personMasterData,
             'secondaryMobile' => $secondaryMobile,
             'secondaryEmail' => $secondaryEmail,
         ];
+        return $this->commonService->sendResponse($datas, true);
     }
     public function getPersonAllDetails($datas)
     {
@@ -868,7 +868,7 @@ class PersonService
         $profilePic = $member['profilePic'];
         $personGender = $member['personDetails']['gender'];
         $personbloodGroup = $member['personDetails']['bloodGroup'];
-        $primaryAddress = isset($member['personAddress']['ParentComAddress']) ? $member['personAddress']['ParentComAddress'] : '';
+        $primaryAddress = isset($member['personAddress']['ParentComAddress']) ? $member['personAddress']['ParentComAddress'] : null;
         $personEducation = $member['personEducation'];
         $personProfession = $member['personProfession'];
 
@@ -1085,5 +1085,45 @@ class PersonService
             $result = ['message' => 'Failed', 'status' => 'OTP validation Failed'];
         }
         return $result;
+    }
+    public function findExactPersonWithEmailAndMobile($datas)
+    {
+        $datas = (object) $datas;
+        $email =$datas->email;
+        $mobile =$datas->mobileNo;
+        $checkMobileAndEmail=$this->personInterface->findExactPersonWithEmailAndMobile($email, $mobile);
+        return $this->commonService->sendResponse($checkMobileAndEmail, true);
+
+    }
+    public function findMemberDataByUid($uid)
+    {
+        $checkMember = $this->memberInterface->findMemberDataByUid($uid);
+        return $this->commonService->sendResponse($checkMember, true);
+    }
+    public function getPrimaryMobileAndEmailbyUid($uid)
+    {
+        $memberPrimaryDatas=$this->personInterface->getPrimaryMobileAndEmailbyUid($uid);
+        return $this->commonService->sendResponse($memberPrimaryDatas, true);
+
+    }
+    public function personProfileDatas($datas)
+    {
+        Log::info('PersonService > personProfileDatas function Inside.' . json_encode($datas));
+        $datas = (object) $datas;
+
+        $member = $this->personInterface->getAllDatasInMember($datas->uid);
+        $personDetails = $member['personDetails'];
+        $primaryMobile = $member['mobile'];
+        $primaryEmail = $member['email'];
+        $profilePic = $member['profilePic'];
+        $personGender = $member['personDetails']['gender'];
+        $personbloodGroup = $member['personDetails']['bloodGroup'];
+        $primaryAddress = isset($member['personAddress']['ParentComAddress']) ? $member['personAddress']['ParentComAddress'] : '';
+        $personEducation = $member['personEducation'];
+        $personProfession = $member['personProfession'];
+
+        $data = ['memberDeatils' => $personDetails, 'primaryMobile' => $primaryMobile, 'primaryEmail' => $primaryEmail, 'profilePic' => $profilePic, 'memberGender' => $personGender, 'memberBloodGroup' => $personbloodGroup, 'primaryAddress' => $primaryAddress, 'memberEducation' => $personEducation, 'memberProfession' => $personProfession];
+
+        return $this->commonService->sendResponse($data,true);
     }
 }
