@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1\Controller\Person;
 
 use App\Http\Controllers\Api\v1\Service\Person\PersonService;
+use App\Http\Controllers\Api\v1\Service\Common\CommonService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,9 +12,10 @@ use Illuminate\Support\Facades\Log;
 class PersonController extends Controller
 {
     protected $personService;
-    public function __construct(PersonService $personService)
+    public function __construct(PersonService $personService,CommonService $CommonService)
     {
         $this->personService = $personService;
+        $this->CommonService = $CommonService;
     }
     public function findCredential(Request $request): JsonResponse
     {
@@ -31,7 +33,7 @@ class PersonController extends Controller
         Log::info('PersonController > findMobileNumber function Return.' . json_encode($response));
         return $response;
     }
-    public function storePerson(Request $request): JsonResponse
+    public function storePerson(Request $request)
     {
 
         Log::info('PersonController > storePerson function Inside.' . json_encode($request->all()));
@@ -261,4 +263,54 @@ class PersonController extends Controller
         Log::info('PersonController > personProfileDatas function Return.' . json_encode($response));
         return $response;
     }
+    public function getPersonMasterData()
+    {
+        $response = $this->CommonService->getPersonMasterData();
+        Log::info('PersonController > getPersonMasterData function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
+    public function getPersonMobileNoByUid(Request $request)
+    {
+        Log::info('PersonController > getPersonMobileNoByUid function Inside.' . json_encode($request->all()));
+        $response = $this->personService->getPersonMobileNoByUid($request->all());
+        Log::info('PersonController > getPersonMobileNoByUid function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
+    public function getPersonPrimaryDataByUid(Request $request)
+    {
+        Log::info('PersonController > getPersonPrimaryDataByUid function Inside.' . json_encode($request->all()));
+        $response = $this->personService->getPersonPrimaryDataByUid($request->all());
+        Log::info('PersonController > getPersonPrimaryDataByUid function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
+    public function personMotherTongueByUid(Request $request)
+    {
+        Log::info('PersonController > personMotherTongueByUid function Inside.' . json_encode($request->all()));
+        $response = $this->personService->personMotherTongueByUid($request->all());
+        Log::info('PersonController > personMotherTongueByUid function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
+    public function personGetAnniversaryDate(Request $request)
+    {
+        Log::info('PersonController > personGetAnniversaryDate function Inside.' . json_encode($request->all()));
+        $response = $this->personService->personGetAnniversaryDate($request->all());
+        Log::info('PersonController > personGetAnniversaryDate function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
+
+    public function personAddressByUid(Request $request)
+    {
+        Log::info('PersonController > personAddressByUid function Inside.' . json_encode($request->all()));
+        $response = $this->personService->personAddressByUid($request->all());
+        Log::info('PersonController > personAddressByUid function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
+    public function getPersonEmailByUidAndEmail(Request $request)
+    {
+        Log::info('PersonController > getPersonEmailByUidAndEmail function Inside.' . json_encode($request->all()));
+        $response = $this->personService->getPersonEmailByUidAndEmail($request->all());
+        Log::info('PersonController > getPersonEmailByUidAndEmail function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
 }
+

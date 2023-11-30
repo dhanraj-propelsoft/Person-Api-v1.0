@@ -169,7 +169,7 @@ class PersonService
         log::info('allModels' . json_encode($personData));
 
         Log::info('PersonService > storePerson function Return.' . json_encode($personData));
-        if ($type) {
+        if (isset($datas->type) && $datas->type == "resource") {
             return $personData;
         } else {
             if ($personData['message'] == "Success") {
@@ -294,7 +294,7 @@ class PersonService
 
         if (isset($datas->anniversaryDate)) {
             if ($datas->personUid) {
-                $model = $this->personInterface->getAnniversaryDate($datas->personUid);
+                $model = $this->personInterface->personGetAnniversaryDate($datas->personUid);
             } else {
                 $model = new personAnniversary();
                 $model->uid = $datas->personUid;
@@ -376,7 +376,7 @@ class PersonService
         Log::info('PersonService > convertToPersonOtherLanguage function Inside.' . json_encode($datas));
         if (isset($datas->otherLanguage)) {
             if ($datas->personUid) {
-                $models = $this->personInterface->motherTongueByUid($datas->personUid);
+                $models = $this->personInterface->personMotherTongueByUid($datas->personUid);
             }
             if (isset($models) && count($models)) {
                 foreach ($models as $model) {
@@ -399,7 +399,7 @@ class PersonService
         if ($datas->motherLanguage && empty($orgModel)) {
             $language = $datas->motherLanguage;
             if ($datas->personUid) {
-                $models = $this->personInterface->motherTongueByUid($datas->personUid);
+                $models = $this->personInterface->personMotherTongueByUid($datas->personUid);
             }
             if (isset($models) && count($models)) {
                 foreach ($models as $model) {
@@ -423,20 +423,26 @@ class PersonService
     }
     public function convertToPersonIdDocument($datas)
     {
-        $orgModel = [];
         Log::info('PersonService > convertToPersonIdDocument function Inside.' . json_encode($datas));
+        $orgModel = [];
         for ($i = 0; $i < count($datas->idDocumentType); $i++) {
             if ($datas->idDocumentType[$i]) {
                 $model[$i] = new IdDocumentType();
                 $model[$i]->pims_person_doc_type_id = $datas->idDocumentType[$i];
                 $model[$i]->Doc_no = $datas->documentNumber[$i];
                 $model[$i]->doc_validity = $datas->validTill[$i];
-                $model[$i]->attachment = $datas->attachments[$i];
+                if (property_exists($datas, 'attachments') && isset($datas->attachments[$i])) {
+                    $model[$i]->attachment = $datas->attachments[$i];
+                } else {
+                    $model[$i]->attachment = null; // Setting a default value, change as needed
+                }
+
                 $model[$i]->doc_cachet_id = isset($datas->cachetId[$i]) ? $datas->cachetId[$i] : null;
                 $model[$i]->pfm_active_status_id = isset($datas->activeStatus[$i]) ? $datas->activeStatus[$i] : 1;
                 array_push($orgModel, $model[$i]);
             }
         }
+
         Log::info('PersonService > convertToPersonIdDocument function Return.' . json_encode($orgModel));
         return $orgModel;
     }
@@ -836,7 +842,7 @@ class PersonService
         $secondaryEmail = $this->personInterface->personSecondaryEmailByUid($uid);
 
         Log::info('PersonService > personProfileDetails function Return.' . json_encode($personMasterData));
-        $datas= [
+        $datas = [
             'personDetail' => $personDetails,
             'personAddressByUid' => $personAddress,
             'personMasterData' => $personMasterData,
@@ -850,7 +856,7 @@ class PersonService
 
         Log::info('PersonService > getPersonAllDetails function Inside.' . json_encode($datas));
         $datas = (object) $datas;
-        $personMobile = $this->personInterface->getPersonDataByMobileNo($datas->mobileNumber);
+        $personMobile = $this->personInterface->getPersonDataByMobileNo($datas->mobileNo);
 
         $personEmail = $this->personInterface->getPersonDataByEmail($datas->email);
 
@@ -1065,12 +1071,12 @@ class PersonService
 
         $datas = (object) $datas;
         $otp = $this->sendingOtp();
-        $resendOtpSecondaryEmail = $this->personInterface->setOtpForPersonPrimaryEmail($datas->personUid, $datas->email, $otp);
+        $resendOtpSecondaryEmail = $this->personInterface->setOtpForPersonPrimaryEmail($datas->uid, $datas->email, $otp);
 
         if ($resendOtpSecondaryEmail) {
             $result = ['Message' => 'Resend Otp Succesfully', 'type' => 1];
         } else {
-            $result = ['Message' => 'Resend  Failed', 'type' => 2];
+            $result = ['Message' => 'email Not  Failed', 'type' => 2];
         }
         return $this->commonService->sendResponse($result, true);
     }
@@ -1089,9 +1095,9 @@ class PersonService
     public function findExactPersonWithEmailAndMobile($datas)
     {
         $datas = (object) $datas;
-        $email =$datas->email;
-        $mobile =$datas->mobileNo;
-        $checkMobileAndEmail=$this->personInterface->findExactPersonWithEmailAndMobile($email, $mobile);
+        $email = $datas->email;
+        $mobile = $datas->mobileNo;
+        $checkMobileAndEmail = $this->personInterface->findExactPersonWithEmailAndMobile($email, $mobile);
         return $this->commonService->sendResponse($checkMobileAndEmail, true);
 
     }
@@ -1102,7 +1108,7 @@ class PersonService
     }
     public function getPrimaryMobileAndEmailbyUid($uid)
     {
-        $memberPrimaryDatas=$this->personInterface->getPrimaryMobileAndEmailbyUid($uid);
+        $memberPrimaryDatas = $this->personInterface->getPrimaryMobileAndEmailbyUid($uid);
         return $this->commonService->sendResponse($memberPrimaryDatas, true);
 
     }
@@ -1124,6 +1130,52 @@ class PersonService
 
         $data = ['memberDeatils' => $personDetails, 'primaryMobile' => $primaryMobile, 'primaryEmail' => $primaryEmail, 'profilePic' => $profilePic, 'memberGender' => $personGender, 'memberBloodGroup' => $personbloodGroup, 'primaryAddress' => $primaryAddress, 'memberEducation' => $personEducation, 'memberProfession' => $personProfession];
 
-        return $this->commonService->sendResponse($data,true);
+        return $this->commonService->sendResponse($data, true);
     }
+    public function getPersonMobileNoByUid($datas)
+    {
+        $datas = (object) $datas;
+        $mobile = $this->personInterface->getPersonMobileNoByUid($datas->uid, $datas->mobileNo);
+        if ($mobile) {
+            return $this->commonService->sendResponse($mobile,true);
+        } else {
+            return $this->commonService->sendError('MobileNo Not Found', false);
+        }
+    }
+    public function getPersonPrimaryDataByUid($uid)
+    {
+        $personPrimaryDatas = $this->personInterface->getPersonPrimaryDataByUid($uid);
+        return $this->commonService->sendResponse($personPrimaryDatas, true);
+
+    }
+    public function personMotherTongueByUid($uid)
+    {
+        $model = $this->personInterface->personMotherTongueByUid($uid);
+        return $this->commonService->sendResponse($model, true);
+
+    }
+    public function personGetAnniversaryDate($uid)
+    {
+        $model = $this->personInterface->personGetAnniversaryDate($uid);
+        return $this->commonService->sendResponse($model, true);
+
+    }
+    public function personAddressByUid($uid)
+    {
+        $model = $this->personInterface->personAddressByUid($uid);
+        return $this->commonService->sendResponse($model, true);
+
+    }
+    public function getPersonEmailByUidAndEmail($datas)
+    {
+        $datas = (object) $datas;
+        $model = $this->personInterface->getPersonEmailByUidAndEmail($datas->uid, $datas->email);
+        if ($model) {
+            return $this->commonService->sendResponse($model,true);
+        } else {
+            return $this->commonService->sendError('email Not Found', false);
+        }
+
+    }
+
 }

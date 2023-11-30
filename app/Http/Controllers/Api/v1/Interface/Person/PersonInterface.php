@@ -9,12 +9,13 @@ interface PersonInterface
     public function checkPersonEmailByUid($email,$uid);
     public function getPersonDatasByUid($uid);
     public function getPersonEmailByUid($uid);
+    public function getPersonEmailByUidAndEmail($uid,$email);
     public function getPersonMobileNoByUid($uid,$mobile);
     public function getPersonProfileByUid($uid);
-    public function getAnniversaryDate($uid);
+    public function personGetAnniversaryDate($uid);
     public function checkSecondaryEmailByUid($email,$uid);
     public function checkSecondaryMobileNumberByUid($mobile,$uid);
-    public function motherTongueByUid($uid);
+    public function personMotherTongueByUid($uid);
     public function checkPerivousAddressById($addressId,$uid);
     public function storePerson($allModels);
     public function storeTempPerson($model);
@@ -26,7 +27,7 @@ interface PersonInterface
     public function personEmailStatusUpdate($uid,$email);
     public function setStageInMember($uid);
     public function getPersonPrimaryDataByUid($uid);
-    public function personAddressByuid($uid);
+    public function personAddressByUid($uid);
     public  function personSecondaryMobileByUid($uid);
     public  function personSecondaryEmailByUid($uid);
     public function getPersonDataByMobileNo($mobile);

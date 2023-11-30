@@ -22,17 +22,19 @@ class CommonService
 
         return response()->json($response, 200);
     }
-    public function sendError($errorMessages = [], $error, $code = 404)
+    public function sendError($error, $message)
     {
         $response = [
             'success' => false,
-            'message' => $error,
-        ];
+            'data' => $error,
+            'message' => $message,
+            'error_code'=> 400
+         ];
 
-        if (!empty($errorMessages)) {
-            $response['data'] = $errorMessages;
-        }
-        return response()->json($response, $code);
+        // if (!empty($errorMessages)) {
+        //     $response['data'] = $errorMessages;
+        // }
+        return response()->json($response);
     }
     public function getSalutation()
     {

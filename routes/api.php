@@ -47,4 +47,11 @@ Route::post('findExactPersonWithEmailAndMobile', [PersonController::class, 'find
 Route::post('findMemberDataByUid', [PersonController::class, 'findMemberDataByUid'])->name('findMemberDataByUid');
 Route::post('getPrimaryMobileAndEmailbyUid', [PersonController::class, 'getPrimaryMobileAndEmailbyUid'])->name('getPrimaryMobileAndEmailbyUid');
 Route::post('personProfileDatas', [PersonController::class, 'personProfileDatas'])->name('personProfileDatas');
+Route::get('getPersonMasterData', [PersonController::class, 'getPersonMasterData'])->name('getPersonMasterData');
+Route::post('getPersonMobileNoByUid', [PersonController::class, 'getPersonMobileNoByUid'])->name('getPersonMobileNoByUid');
+Route::post('getPersonPrimaryDataByUid', [PersonController::class, 'getPersonPrimaryDataByUid'])->name('getPersonPrimaryDataByUid');
+Route::post('personMotherTongueByUid', [PersonController::class, 'personMotherTongueByUid'])->name('personMotherTongueByUid');
+Route::post('personGetAnniversaryDate', [PersonController::class, 'personGetAnniversaryDate'])->name('personGetAnniversaryDate');
+Route::post('personAddressByUid', [PersonController::class, 'personAddressByUid'])->name('personAddressByUid');
+Route::post('getPersonEmailByUidAndEmail', [PersonController::class, 'getPersonEmailByUidAndEmail'])->name('getPersonEmailByUidAndEmail');
 

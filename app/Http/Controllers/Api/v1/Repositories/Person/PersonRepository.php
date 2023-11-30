@@ -50,7 +50,7 @@ class PersonRepository implements PersonInterface
     {
         return PersonProfilePic::where('uid', $uid)->whereNull('deleted_flag')->first();
     }
-    public function getAnniversaryDate($uid)
+    public function personGetAnniversaryDate($uid)
     {
         return personAnniversary::where('uid', $uid)->whereNull('deleted_flag')->first();
     }
@@ -59,14 +59,19 @@ class PersonRepository implements PersonInterface
         return PersonEmail::where(['uid' => $uid, 'email' => $email, ['email_cachet_id', '=', '2']])->whereNull('deleted_at')->first();
 
     }
+    public function getPersonEmailByUidAndEmail($uid, $email)
+    {
+        return PersonEmail::where(['uid' => $uid, 'email' => $email])->whereNull('deleted_at')->first();
+
+    }
     public function checkSecondaryMobileNumberByUid($mobile, $uid)
     {
         return PersonMobile::where(['uid' => $uid, 'mobile_no' => $mobile, ['mobile_cachet_id', '=', '2']])->first();
     }
 
-    public function motherTongueByUid($uid)
+    public function personMotherTongueByUid($uid)
     {
-        return PersonLanguage::where('uid', $uid)->whereNull('deleted_at')->get();
+        return PersonLanguage::where('uid', $uid)->whereNull('deleted_flag')->get();
     }
     public function checkPerivousAddressById($addressId, $uid)
     {
@@ -252,11 +257,11 @@ class PersonRepository implements PersonInterface
                 $query->where('email_cachet_id', 1);
             })
             ->where('uid', $uid)
-            ->first()->toArray();
+            ->first();
 
 
     }
-    public function personAddressByuid($uid)
+    public function personAddressByUid($uid)
     {
 
         return PersonAddress::with('ParentComAddress')
