@@ -16,12 +16,22 @@ class Person extends Model
     }
     public function mobile()
     {
+        return $this->hasMany('App\Models\PersonMobile', 'uid', 'uid');
+    }
+    public function mobileNo()
+    {
         return $this->hasOne('App\Models\PersonMobile', 'uid', 'uid');
     }
+
     public function email()
+    {
+        return $this->hasMany('App\Models\PersonEmail', 'uid', 'uid');
+    }
+    public function personEmail()
     {
         return $this->hasOne('App\Models\PersonEmail', 'uid', 'uid');
     }
+
     public function personDetails()
     {
         return $this->hasOne(PersonDetails::class,'uid','uid');

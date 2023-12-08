@@ -254,14 +254,8 @@ class PersonRepository implements PersonInterface
     {
 
         return Person::with('personDetails', 'email', 'mobile', 'profilePic', 'personLanguage', 'personAnniversaryDate')
-            ->whereHas('mobile', function ($query) {
-                $query->where('mobile_cachet_id', 1);
-            })
-            ->whereHas('email', function ($query) {
-                $query->where('email_cachet_id', 1);
-            })
-            ->where('uid', $uid)
-            ->first();
+        ->where('uid', $uid)
+        ->first();
     }
     public function personAddressByUid($uid)
     {
@@ -280,14 +274,14 @@ class PersonRepository implements PersonInterface
     }
     public function getPersonDataByEmail($email)
     {
-        $data = Person::with('email', 'existMember')
-            ->whereHas('email', function ($query) use ($email) {
+        $data = Person::with('personEmail', 'existMember')
+            ->whereHas('personEmail', function ($query) use ($email) {
                 $query->whereIn('email_cachet_id', [1, 2])
                     ->where('email', $email);
             })
             ->first();
         if ($data) {
-            $email = $data['email']['email'];
+            $email = $data['personEmail']['email'];
             $member = $this->CheckEmailInMember($email);
             return $member ? null : $data;
         }
@@ -299,17 +293,17 @@ class PersonRepository implements PersonInterface
     public function getPersonDataByMobileNo($mobile)
     {
 
-        $data = Person::with('mobile', 'existMember')
-            ->whereHas('mobile', function ($query) use ($mobile) {
-                $query->whereIn('mobile_cachet_id', [1, 2])
-                    ->where('mobile_no', $mobile);
-            })
-            ->first();
-        if ($data) {
-            $mobileNo = $data['mobile']['mobile_no'];
-            $member = $this->CheckMobileNoInMember($mobileNo);
-            return $member ? null : $data;
-        }
+        $data = Person::with('mobileNo', 'existMember')
+        ->whereHas('mobileNo', function ($query) use ($mobile) {
+            $query->whereIn('mobile_cachet_id', [1, 2])
+                ->where('mobile_no', $mobile);
+        })
+        ->first();
+    if ($data) {
+        $mobileNo = $data['mobileNo']['mobile_no'];
+        $member = $this->CheckMobileNoInMember($mobileNo);
+        return $member ? null : $data;
+    }
     }
     public function CheckMobileNoInMember($mobileNo)
     {

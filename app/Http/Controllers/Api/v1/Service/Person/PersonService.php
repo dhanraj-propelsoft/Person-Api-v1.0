@@ -43,38 +43,39 @@ class PersonService
     }
     public function findMemberByUid($uid)
     {
-
-        $response = Http::get('http://localhost:8000/api/findMemberByUid/' . $uid);
+       
+        $response = Http::get(config('gateway_api_base') .'findMemberByUid/' . $uid);
         $checkPerson = null;
         if ($response->successful()) {
             $responseData = $response->json();
-
             $checkPerson = $responseData['data'];
         }
+
         return $checkPerson;
     }
     public function findCredential($datas)
     {
         Log::info('PersonService > findCredential function Inside.' . json_encode($datas));
         $datas = (object) $datas;
-
         $checkPersonMobile = $this->personInterface->checkPersonByMobileNo($datas->mobileNumber);
         $checkPersonEmail = $this->personInterface->checkPersonByEmail($datas->email);
+   
         if ($checkPersonMobile && !$checkPersonEmail) {
             $personMobileUid = $checkPersonMobile->uid;
             $checkPersonMobileAsMember = $this->findMemberByUid($personMobileUid);
+          
             if ($checkPersonMobileAsMember) {
-                dd("case11");
+                $result =['Case' => 11 ,'memberMobile' => $checkPersonMobileAsMember];
             } else {
-                dd("case2");
+                $result =['Case' => 2 ,'personMobile' => $checkPersonMobile];
             }
         } elseif (!$checkPersonMobile && $checkPersonEmail) {
             $personEmailUid = $checkPersonEmail->uid;
             $checkPersonEmailAsMember = $this->findMemberByUid($personEmailUid);
             if ($checkPersonEmailAsMember) {
-                dd("case10");
+                $result =['Case' => 10 ,'memberEmail' => $checkPersonEmail];
             } else {
-                dd("case3");
+                $result =['Case' => 3 ,'personEmail' => $checkPersonEmail];
             }
         } elseif ($checkPersonMobile && $checkPersonEmail) {
             $personMobileUid = $checkPersonMobile->uid;
@@ -86,41 +87,30 @@ class PersonService
             if ($personMobileUid == $personEmailUid) {
 
                 if ($checkPersonMobileAsMember) {
-                    dd("case9");
+                    $result =['Case' => 9 ,'MemberEmailAndMObile' => $checkPersonMobileAsMember];
                 } else {
-                    dd("case5");
+                    $result =['Case' => 5 ,'personMobile' => $checkPersonMobile,'personEmail'=>$checkPersonEmail];
                 }
             } else {
 
                 if ($checkPersonMobileAsMember && $checkPersonEmailAsMember) {
-                    dd("case8");
+                    $result =['Case' =>8 ,'memberMobile' => $checkPersonMobileAsMember,'memberEmail'=>$checkPersonEmailAsMember];
+
                 } elseif ($checkPersonMobileAsMember && !$checkPersonEmailAsMember) {
-                    dd("case6");
+                    $result =['Case' =>6 ,'memberMobile' => $checkPersonMobileAsMember,'personEmail'=>$checkPersonEmail];
+
                 } elseif (!$checkPersonMobileAsMember && $checkPersonEmailAsMember) {
-                    dd("case7");
+                    $result =['Case' =>7 ,'memberEmail' => $checkPersonEmailAsMember,'personMobile'=>$checkPersonMobile];
+
                 } else {
-                    dd("case4");
+                    $result =['Case' => 4 ,'personMobile' => $checkPersonMobile,'personEmail'=>$checkPersonEmail];
                 }
             }
         } else {
-            dd("case1");
-        }
-        dd($checkPersonMobile, $checkPersonEmail);
-        if (!empty($checkPersonMobile)) {
-            $checkPersonEmail = $this->personInterface->checkPersonEmailByUid($datas->email, $checkPersonMobile->uid);
-        }
-        $personMobile = $this->personInterface->getPersonDataByMobileNo($datas->mobileNumber);
+            $result =['Case' => 1 ,'mobileNo' => $datas->mobileNumber,'email' =>$datas->email];
 
-        $personEmail = $this->personInterface->getPersonDataByEmail($datas->email);
-
-        if ($checkPersonMobile && $checkPersonEmail) {
-            $result = ['type' => 1, 'personData' => $datas, 'uid' => $checkPersonMobile->uid, 'status' => 'ExactPerson'];
-        } else if ($personMobile !== null || $personEmail !== null) {
-            $personData = ['personMobile' => $personMobile->mobile, 'personEmail' => $personEmail->email];
-            $result = ['type' => 2, 'personData' => $personData, 'status' => 'mappedPerson'];
-        } else {
-            $result = ['type' => 3, 'status' => 'freshMember'];
         }
+       
         return $this->commonService->sendResponse($result, true);
     }
     public function findMobileNumber($datas)
@@ -282,7 +272,7 @@ class PersonService
         if (isset($datas->dob)) {
             $date = Carbon::createFromFormat('d-m-Y', $datas->dob)->format('Y-m-d');
         }
-        $model->dob = $date;
+        $model->dob = isset($date) ? $date : null;
         $model->birth_place = isset($datas->birthCity) ? $datas->birthCity : null;
         $model->pims_person_marital_status_id = isset($datas->maritalStatus) ? $datas->maritalStatus : null;
         $model->pims_person_gender_id = isset($datas->genderId) ? $datas->genderId : null;
@@ -362,7 +352,7 @@ class PersonService
                 $model->uid = $datas->personUid;
             }
             $date = Carbon::createFromFormat('d-m-Y', $datas->anniversaryDate)->format('Y-m-d');
-            $model->anniversary_date = $date;
+            $model->anniversary_date = isset($date) ? $date : null;
             $model->occasions_id = isset($datas->occasionId) ? $datas->occasionId : null;
             $model->pfm_active_status_id = isset($datas->activeStatusId) ? $datas->activeStatusId : 1;
             Log::info('PersonService > PersonAnniversaryDate .' . json_encode($model));

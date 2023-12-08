@@ -27,6 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        config(['gateway_api_base' => "http://127.0.0.1:8000/api/"]);
     }
 }
