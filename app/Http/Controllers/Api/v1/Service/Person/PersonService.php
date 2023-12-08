@@ -24,6 +24,7 @@ use App\Models\TempPerson;
 use App\Models\WebLink;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -39,13 +40,72 @@ class PersonService
         $this->smsService = $smsService;
         $this->smsInterface = $smsInterface;
         $this->CommonInterface = $CommonInterface;
+    }
+    public function findMemberByUid($uid)
+    {
 
+        $response = Http::get('http://localhost:8000/api/findMemberByUid/' . $uid);
+        $checkPerson = null;
+        if ($response->successful()) {
+            $responseData = $response->json();
+
+            $checkPerson = $responseData['data'];
+        }
+        return $checkPerson;
     }
     public function findCredential($datas)
     {
         Log::info('PersonService > findCredential function Inside.' . json_encode($datas));
         $datas = (object) $datas;
+
         $checkPersonMobile = $this->personInterface->checkPersonByMobileNo($datas->mobileNumber);
+        $checkPersonEmail = $this->personInterface->checkPersonByEmail($datas->email);
+        if ($checkPersonMobile && !$checkPersonEmail) {
+            $personMobileUid = $checkPersonMobile->uid;
+            $checkPersonMobileAsMember = $this->findMemberByUid($personMobileUid);
+            if ($checkPersonMobileAsMember) {
+                dd("case11");
+            } else {
+                dd("case2");
+            }
+        } elseif (!$checkPersonMobile && $checkPersonEmail) {
+            $personEmailUid = $checkPersonEmail->uid;
+            $checkPersonEmailAsMember = $this->findMemberByUid($personEmailUid);
+            if ($checkPersonEmailAsMember) {
+                dd("case10");
+            } else {
+                dd("case3");
+            }
+        } elseif ($checkPersonMobile && $checkPersonEmail) {
+            $personMobileUid = $checkPersonMobile->uid;
+            $personEmailUid = $checkPersonEmail->uid;
+
+            $checkPersonMobileAsMember = $this->findMemberByUid($personMobileUid);
+            $checkPersonEmailAsMember = $this->findMemberByUid($personEmailUid);
+
+            if ($personMobileUid == $personEmailUid) {
+
+                if ($checkPersonMobileAsMember) {
+                    dd("case9");
+                } else {
+                    dd("case5");
+                }
+            } else {
+
+                if ($checkPersonMobileAsMember && $checkPersonEmailAsMember) {
+                    dd("case8");
+                } elseif ($checkPersonMobileAsMember && !$checkPersonEmailAsMember) {
+                    dd("case6");
+                } elseif (!$checkPersonMobileAsMember && $checkPersonEmailAsMember) {
+                    dd("case7");
+                } else {
+                    dd("case4");
+                }
+            }
+        } else {
+            dd("case1");
+        }
+        dd($checkPersonMobile, $checkPersonEmail);
         if (!empty($checkPersonMobile)) {
             $checkPersonEmail = $this->personInterface->checkPersonEmailByUid($datas->email, $checkPersonMobile->uid);
         }
@@ -80,11 +140,14 @@ class PersonService
                 'memberName' => $memberName,
                 'memberUid' => $memberUid,
                 'mobileNumber' => $datas->mobileNumber,
-                'status' => "MemberOnly"];
+                'status' => "MemberOnly"
+            ];
         } else {
-            $result = ['type' => 2,
+            $result = [
+                'type' => 2,
                 'mobileNumber' => $datas->mobileNumber,
-                'status' => "checkingPerson"];
+                'status' => "checkingPerson"
+            ];
         }
         return $this->commonService->sendResponse($result, "");
     }
@@ -145,7 +208,6 @@ class PersonService
             $personCommonAddressModel = $this->convertToPersonCommonAddress($datas);
             $personAddressId = $this->convertToPersonAddressId($datas);
             Log::info('PersonService > personAddressId function Return.' . json_encode($personAddressId));
-
         }
         $allModels = [
             'personModel' => $personModel,
@@ -539,7 +601,6 @@ class PersonService
                 $table->timestamp('deleted_at')->nullable();
             });
         }
-
     }
     public function storeTempPerson($datas)
     {
@@ -566,7 +627,6 @@ class PersonService
                 $storeTempPerson1 = $this->resendOtp($temp);
                 log::info('personservice > ' . json_encode($storeTempPerson1));
                 return $storeTempPerson1;
-
             }
             return $this->commonService->sendResponse($responseData, $storeTempPerson['message']);
         } else {
@@ -698,7 +758,6 @@ class PersonService
             $getMemberName = $this->personInterface->getPersonDatasByUid($datas->uid);
             $response = ['type' => '1', 'uid' => $datas->uid, 'email' => $personData->email, 'personName' => $getMemberName['first_name']];
             return $this->commonService->sendResponse($response, true);
-
         } else {
             $response = ["message" => 'Mail Not Send', 'type' => '2'];
             return $this->commonService->sendError($response, false);
@@ -734,7 +793,6 @@ class PersonService
         } else {
             return $this->commonService->sendError('MobileNo Not Found', false);
         }
-
     }
     public function checkPersonEmail($datas)
     {
@@ -893,13 +951,11 @@ class PersonService
         if (empty($checkPrimaryMobile) && empty($checkMobile)) {
             $convertMobileNo = $this->convertSecondaryMobileNo($datas);
             $result = $this->personInterface->addSecondaryMobileNoForMember($convertMobileNo);
-
         } else {
 
             $result = $checkPrimaryMobile
-            ? ['Member' => 'This Number  Exists in Member', 'type' => 2]
-            : ['Member' => 'This Number  Exists in Other Member', 'type' => 1];
-
+                ? ['Member' => 'This Number  Exists in Member', 'type' => 2]
+                : ['Member' => 'This Number  Exists in Other Member', 'type' => 1];
         }
         return $this->commonService->sendResponse($result, true);
     }
@@ -982,8 +1038,8 @@ class PersonService
             $result = $this->personInterface->addSecondaryEmailForMember($convertEmail);
         } else {
             $result = $checkPrimaryEmail
-            ? ['Member' => 'Email  Exists in Other Member', 'type' => 1]
-            : ['Member' => 'Email Exists', 'type' => 2];
+                ? ['Member' => 'Email  Exists in Other Member', 'type' => 1]
+                : ['Member' => 'Email Exists', 'type' => 2];
         }
         return $this->commonService->sendResponse($result, true);
     }
@@ -1001,7 +1057,6 @@ class PersonService
     public function sendingOtp()
     {
         return random_int(1000, 9999);
-
     }
     public function resendOtpForEmail($datas)
     {
@@ -1041,7 +1096,6 @@ class PersonService
         }
 
         return $this->commonService->sendResponse($result, true);
-
     }
     public function OtpValidateForSecondaryEmail($datas)
     {
@@ -1099,7 +1153,6 @@ class PersonService
         $mobile = $datas->mobileNo;
         $checkMobileAndEmail = $this->personInterface->findExactPersonWithEmailAndMobile($email, $mobile);
         return $this->commonService->sendResponse($checkMobileAndEmail, true);
-
     }
     public function findMemberDataByUid($uid)
     {
@@ -1110,7 +1163,6 @@ class PersonService
     {
         $memberPrimaryDatas = $this->personInterface->getPrimaryMobileAndEmailbyUid($uid);
         return $this->commonService->sendResponse($memberPrimaryDatas, true);
-
     }
     public function personProfileDatas($datas)
     {
@@ -1137,7 +1189,7 @@ class PersonService
         $datas = (object) $datas;
         $mobile = $this->personInterface->getPersonMobileNoByUid($datas->uid, $datas->mobileNo);
         if ($mobile) {
-            return $this->commonService->sendResponse($mobile,true);
+            return $this->commonService->sendResponse($mobile, true);
         } else {
             return $this->commonService->sendError('MobileNo Not Found', false);
         }
@@ -1146,36 +1198,30 @@ class PersonService
     {
         $personPrimaryDatas = $this->personInterface->getPersonPrimaryDataByUid($uid);
         return $this->commonService->sendResponse($personPrimaryDatas, true);
-
     }
     public function personMotherTongueByUid($uid)
     {
         $model = $this->personInterface->personMotherTongueByUid($uid);
         return $this->commonService->sendResponse($model, true);
-
     }
     public function personGetAnniversaryDate($uid)
     {
         $model = $this->personInterface->personGetAnniversaryDate($uid);
         return $this->commonService->sendResponse($model, true);
-
     }
     public function personAddressByUid($uid)
     {
         $model = $this->personInterface->personAddressByUid($uid);
         return $this->commonService->sendResponse($model, true);
-
     }
     public function getPersonEmailByUidAndEmail($datas)
     {
         $datas = (object) $datas;
         $model = $this->personInterface->getPersonEmailByUidAndEmail($datas->uid, $datas->email);
         if ($model) {
-            return $this->commonService->sendResponse($model,true);
+            return $this->commonService->sendResponse($model, true);
         } else {
             return $this->commonService->sendError('email Not Found', false);
         }
-
     }
-
 }
