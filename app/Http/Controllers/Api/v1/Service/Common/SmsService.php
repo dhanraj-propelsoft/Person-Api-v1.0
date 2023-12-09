@@ -9,6 +9,7 @@ use App\Models\SmsManipulation;
 class SmsService
 
 {
+    protected $smsInterface;
     public function __construct(SmsInterface $smsInterface)
     {
         $this->smsInterface = $smsInterface;

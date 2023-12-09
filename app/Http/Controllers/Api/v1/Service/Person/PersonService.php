@@ -31,7 +31,7 @@ use Illuminate\Support\Str;
 
 class PersonService
 {
-    protected $personInterface, $commonService;
+    protected $personInterface, $commonService, $memberInterface, $smsService, $smsInterface, $CommonInterface;
     public function __construct(PersonInterface $personInterface, CommonService $commonService, MemberInterface $memberInterface, SmsService $smsService, SmsInterface $smsInterface, CommonInterface $CommonInterface)
     {
         $this->personInterface = $personInterface;
@@ -43,8 +43,8 @@ class PersonService
     }
     public function findMemberByUid($uid)
     {
-       
-        $response = Http::get(config('gateway_api_base') .'findMemberByUid/' . $uid);
+
+        $response = Http::get(config('gateway_api_base') . 'findMemberByUid/' . $uid);
         $checkPerson = null;
         if ($response->successful()) {
             $responseData = $response->json();
@@ -59,23 +59,23 @@ class PersonService
         $datas = (object) $datas;
         $checkPersonMobile = $this->personInterface->checkPersonByMobileNo($datas->mobileNumber);
         $checkPersonEmail = $this->personInterface->checkPersonByEmail($datas->email);
-   
+
         if ($checkPersonMobile && !$checkPersonEmail) {
             $personMobileUid = $checkPersonMobile->uid;
             $checkPersonMobileAsMember = $this->findMemberByUid($personMobileUid);
-          
+
             if ($checkPersonMobileAsMember) {
-                $result =['Case' => 11 ,'memberMobile' => $checkPersonMobileAsMember];
+                $result = ['type' => 11, 'memberMobile' => $checkPersonMobileAsMember];
             } else {
-                $result =['Case' => 2 ,'personMobile' => $checkPersonMobile];
+                $result = ['type' => 2, 'personMobile' => $checkPersonMobile];
             }
         } elseif (!$checkPersonMobile && $checkPersonEmail) {
             $personEmailUid = $checkPersonEmail->uid;
             $checkPersonEmailAsMember = $this->findMemberByUid($personEmailUid);
             if ($checkPersonEmailAsMember) {
-                $result =['Case' => 10 ,'memberEmail' => $checkPersonEmail];
+                $result = ['type' => 10, 'memberEmail' => $checkPersonEmail];
             } else {
-                $result =['Case' => 3 ,'personEmail' => $checkPersonEmail];
+                $result = ['type' => 3, 'personEmail' => $checkPersonEmail];
             }
         } elseif ($checkPersonMobile && $checkPersonEmail) {
             $personMobileUid = $checkPersonMobile->uid;
@@ -87,30 +87,26 @@ class PersonService
             if ($personMobileUid == $personEmailUid) {
 
                 if ($checkPersonMobileAsMember) {
-                    $result =['Case' => 9 ,'MemberEmailAndMObile' => $checkPersonMobileAsMember];
+                    $result = ['type' => 9, 'MemberEmailAndMObile' => $checkPersonMobileAsMember];
                 } else {
-                    $result =['Case' => 5 ,'personMobile' => $checkPersonMobile,'personEmail'=>$checkPersonEmail];
+                    $result = ['type' => 5, 'personMobile' => $checkPersonMobile, 'personEmail' => $checkPersonEmail];
                 }
             } else {
 
                 if ($checkPersonMobileAsMember && $checkPersonEmailAsMember) {
-                    $result =['Case' =>8 ,'memberMobile' => $checkPersonMobileAsMember,'memberEmail'=>$checkPersonEmailAsMember];
-
+                    $result = ['type' => 8, 'memberMobile' => $checkPersonMobileAsMember, 'memberEmail' => $checkPersonEmailAsMember];
                 } elseif ($checkPersonMobileAsMember && !$checkPersonEmailAsMember) {
-                    $result =['Case' =>6 ,'memberMobile' => $checkPersonMobileAsMember,'personEmail'=>$checkPersonEmail];
-
+                    $result = ['type' => 6, 'memberMobile' => $checkPersonMobileAsMember, 'personEmail' => $checkPersonEmail];
                 } elseif (!$checkPersonMobileAsMember && $checkPersonEmailAsMember) {
-                    $result =['Case' =>7 ,'memberEmail' => $checkPersonEmailAsMember,'personMobile'=>$checkPersonMobile];
-
+                    $result = ['type' => 7, 'memberEmail' => $checkPersonEmailAsMember, 'personMobile' => $checkPersonMobile];
                 } else {
-                    $result =['Case' => 4 ,'personMobile' => $checkPersonMobile,'personEmail'=>$checkPersonEmail];
+                    $result = ['type' => 4, 'personMobile' => $checkPersonMobile, 'personEmail' => $checkPersonEmail];
                 }
             }
         } else {
-            $result =['Case' => 1 ,'mobileNo' => $datas->mobileNumber,'email' =>$datas->email];
-
+            $result = ['type' => 1, 'mobileNo' => $datas->mobileNumber, 'email' => $datas->email];
         }
-       
+
         return $this->commonService->sendResponse($result, true);
     }
     public function findMobileNumber($datas)
