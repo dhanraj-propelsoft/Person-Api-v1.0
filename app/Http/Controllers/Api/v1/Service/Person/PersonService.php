@@ -126,13 +126,13 @@ class PersonService
                 'memberName' => $memberName,
                 'memberUid' => $memberUid,
                 'mobileNumber' => $datas->mobileNumber,
-                'status' => "MemberOnly"
+                'status' => "MemberOnly",
             ];
         } else {
             $result = [
                 'type' => 2,
                 'mobileNumber' => $datas->mobileNumber,
-                'status' => "checkingPerson"
+                'status' => "checkingPerson",
             ];
         }
         return $this->commonService->sendResponse($result, "");
@@ -701,13 +701,13 @@ class PersonService
             return $this->commonService->sendError($storeTempPerson['data'], $storeTempPerson['message']);
         }
     }
-    public function personOtpValidation($datas)
+    public function tempPersonOtpValidate($datas)
     {
 
-        Log::info('PersonService > personOtpValidation function Inside.' . json_encode($datas));
+        Log::info('PersonService > tempPersonOtpValidate function Inside.' . json_encode($datas));
         $datas = (object) $datas;
         $tempPersonModel = $this->personInterface->findTempPersonById($datas->tempId);
-        Log::info('PersonService > personOtpValidation function Return.' . json_encode($tempPersonModel));
+        Log::info('PersonService > tempPersonOtpValidate function Return.' . json_encode($tempPersonModel));
         if ($tempPersonModel) {
             if ($datas->otp == $tempPersonModel->otp) {
                 $personalDatas = json_decode($tempPersonModel->personal_data, true);
@@ -940,8 +940,8 @@ class PersonService
         } else {
 
             $result = $checkPrimaryMobile
-                ? ['Member' => 'This Number  Exists in Member', 'type' => 2]
-                : ['Member' => 'This Number  Exists in Other Member', 'type' => 1];
+            ? ['Member' => 'This Number  Exists in Member', 'type' => 2]
+            : ['Member' => 'This Number  Exists in Other Member', 'type' => 1];
         }
         return $this->commonService->sendResponse($result, true);
     }
@@ -1024,8 +1024,8 @@ class PersonService
             $result = $this->personInterface->addSecondaryEmailForMember($convertEmail);
         } else {
             $result = $checkPrimaryEmail
-                ? ['Member' => 'Email  Exists in Other Member', 'type' => 1]
-                : ['Member' => 'Email Exists', 'type' => 2];
+            ? ['Member' => 'Email  Exists in Other Member', 'type' => 1]
+            : ['Member' => 'Email Exists', 'type' => 2];
         }
         return $this->commonService->sendResponse($result, true);
     }
@@ -1209,5 +1209,17 @@ class PersonService
         } else {
             return $this->commonService->sendError('email Not Found', false);
         }
+    }
+    public function resendOtpForTempPerson($tempId)
+    {
+        $otp = $this->sendingOtp();
+        $model = $this->personInterface->resendOtpForTempPerson($tempId, $otp);
+
+        if ($model) {
+            return $this->commonService->sendResponse('Resend Sucess', true);
+        } else {
+            return $this->commonService->sendError('Resend Failed', false);
+        }
+
     }
 }

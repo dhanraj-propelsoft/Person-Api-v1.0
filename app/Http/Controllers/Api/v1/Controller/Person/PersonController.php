@@ -49,11 +49,11 @@ class PersonController extends Controller
         Log::info('PersonController > storeTempPerson function Return.' . json_encode($response));
         return $response;
     }
-    public function personOtpValidation(Request $request): JsonResponse
+    public function tempPersonOtpValidate(Request $request): JsonResponse
     {
-        Log::info('PersonController > personOtpValidation function Inside.' . json_encode($request->all()));
-        $response = $this->personService->personOtpValidation($request->all());
-        Log::info('PersonController > personOtpValidation function Return.' . json_encode($response));
+        Log::info('PersonController > tempPersonOtpValidate function Inside.' . json_encode($request->all()));
+        $response = $this->personService->tempPersonOtpValidate($request->all());
+        Log::info('PersonController > tempPersonOtpValidate function Return.' . json_encode($response));
         return $response;
     }
     public function generateEmailOtp(Request $request)
@@ -310,6 +310,13 @@ class PersonController extends Controller
         Log::info('PersonController > getPersonEmailByUidAndEmail function Inside.' . json_encode($request->all()));
         $response = $this->personService->getPersonEmailByUidAndEmail($request->all());
         Log::info('PersonController > getPersonEmailByUidAndEmail function Return.' . json_encode($response));
+        return $this->CommonService->sendResponse($response,true);
+    }
+    public function resendOtpForTempPerson($tempId)
+    {
+        Log::info('PersonController > resendOtpForTempPerson function Inside.' . json_encode($tempId));
+        $response = $this->personService->resendOtpForTempPerson($tempId);
+        Log::info('PersonController > resendOtpForTempPerson function Return.' . json_encode($response));
         return $this->CommonService->sendResponse($response,true);
     }
 }

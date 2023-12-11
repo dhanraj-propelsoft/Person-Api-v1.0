@@ -50,6 +50,7 @@ interface PersonInterface
     public function setPirmaryEmail($model);
     public function getMobileNoByUid($mobile,$uid);
     public function findExactPersonWithEmailAndMobile($email, $mobile);
+    public function resendOtpForTempPerson($tempId,$otp);
 
 
 

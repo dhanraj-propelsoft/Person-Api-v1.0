@@ -435,4 +435,8 @@ class PersonRepository implements PersonInterface
             })
             ->first();
     }
+    public function resendOtpForTempPerson($tempId,$otp)
+    {
+        return  TempPerson::where('id', $tempId)->update(['otp' => $otp]);
+    }
 }

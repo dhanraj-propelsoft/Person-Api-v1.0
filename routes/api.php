@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('personDatas', [PersonController::class, 'personDatas'])->name('personDatas');
 Route::post('storeTempPerson',[PersonController::class,'storeTempPerson'])->name('storeTempPerson');
 Route::post('findCredential', [PersonController::class,'findCredential'])->name('findCredential');
-Route::post('personOtpValidation',[PersonController::class,'personOtpValidation'])->name('personOtpValidation');
+Route::post('tempPersonOtpValidate',[PersonController::class,'tempPersonOtpValidate'])->name('tempPersonOtpValidate');
 Route::post('generateEmailOtp', [PersonController::class, 'generateEmailOtp'])->name('generateEmailOtp');
 Route::post('storePerson', [PersonController::class, 'storePerson'])->name('storePerson');
 Route::post('checkMemberOrPerson', [PersonController::class, 'checkMemberOrPerson'])->name('checkMemberOrPerson');
@@ -54,4 +54,5 @@ Route::post('personMotherTongueByUid', [PersonController::class, 'personMotherTo
 Route::post('personGetAnniversaryDate', [PersonController::class, 'personGetAnniversaryDate'])->name('personGetAnniversaryDate');
 Route::post('personAddressByUid', [PersonController::class, 'personAddressByUid'])->name('personAddressByUid');
 Route::post('getPersonEmailByUidAndEmail', [PersonController::class, 'getPersonEmailByUidAndEmail'])->name('getPersonEmailByUidAndEmail');
+Route::get('resendOtpForTempPerson/{tempId}', [PersonController::class, 'resendOtpForTempPerson'])->name('resendOtpForTempPerson');
 
