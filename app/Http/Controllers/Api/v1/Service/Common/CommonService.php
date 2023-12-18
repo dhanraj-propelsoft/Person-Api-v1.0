@@ -12,7 +12,7 @@ class CommonService
         $this->commonInterface = $commonInterface;
 
     }
-    public function sendResponse($result, $message)
+    public function sendResponse($result, $message=null)
     {
         $response = [
             'success' => true,
@@ -22,7 +22,7 @@ class CommonService
 
         return response()->json($response, 200);
     }
-    public function sendError($error, $message)
+    public function sendError($error, $message=null)
     {
         $response = [
             'success' => false,

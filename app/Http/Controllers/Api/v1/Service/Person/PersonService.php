@@ -50,7 +50,6 @@ class PersonService
             $responseData = $response->json();
             $checkPerson = $responseData['data'];
         }
-
         return $checkPerson;
     }
     public function findCredential($datas)
@@ -593,7 +592,9 @@ class PersonService
 
         Log::info('PersonService > storeTempPerson function Inside.' . json_encode($datas));
         $datas = (object) $datas;
+
         $tempId = isset($datas->tempId) ? $datas->tempId : null;
+
         $model = $this->convertToTempPersonModel($datas, $tempId);
         $storeTempPerson = $this->personInterface->storeTempPerson($model);
         Log::info('PersonService > storeTempPerson function Return.' . json_encode($storeTempPerson));
@@ -621,11 +622,12 @@ class PersonService
     }
     public function convertToTempPersonModel($datas, $id = null)
     {
+
         log::info('personService > convertToTempPersonModel ' . json_encode($datas));
 
         if ($id) {
-            $model = TempPerson::findOrFail($id);
-            log::info('findOrFail > ' . json_encode($model));
+            $model = $this->personInterface->findTempPersonById($id);
+            log::info('findTempPersonById  -> ' . json_encode($model));
         } else {
 
             $model = new TempPerson();
@@ -722,15 +724,15 @@ class PersonService
                 $bloodGroup = isset($personalDatas['bg']) ? $personalDatas['bg'] : null;
                 $dob = isset($personalDatas['dob']) ? $personalDatas['dob'] : null;
                 $personDatas = ['mobileNumber' => $mobileNumber, 'email' => $email, 'salutationId' => $salutation, 'firstName' => $firstName, 'middleName' => $middleName, 'lastName' => $lastName, 'nickName' => $nickName, 'genderId' => $gender, 'bloodGroup' => $bloodGroup, 'dob' => $dob];
-
                 $personModel = $this->storePerson($personDatas);
-                $tempPersonModel->delete();
-                return $personModel;
+                $data = json_decode($personModel->getContent());
+                 $tempPersonModel->delete();
+                return $this->commonService->sendResponse(['personName' =>$data->data->first_name, 'personUid' =>$data->data->uid],true);
             } else {
-                return $this->commonService->sendError(['tempId' => $tempPersonModel->id, 'mobileNumber' => $tempPersonModel->mobile_no]);
+                return $this->commonService->sendError(['tempId' => $tempPersonModel->id, 'mobileNumber' => $tempPersonModel->mobile_no,'message'=>"Invalid OTP"]);
             }
         } else {
-            return $this->commonService->sendError(['InValid Person', false]);
+            return $this->commonService->sendError('InValid TempPerson', false);
         }
     }
     public function generateEmailOtp($datas)

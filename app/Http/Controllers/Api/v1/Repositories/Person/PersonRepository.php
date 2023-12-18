@@ -208,7 +208,7 @@ class PersonRepository implements PersonInterface
     public function findTempPersonById($id)
     {
 
-        return TempPerson::findOrFail($id);
+        return TempPerson::where('id', $id)->whereNull('deleted_at')->first();
     }
     public function setOtpForPersonPrimaryEmail($uid, $email, $otp)
     {
