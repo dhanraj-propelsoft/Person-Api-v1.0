@@ -41,17 +41,19 @@ class PersonService
         $this->smsInterface = $smsInterface;
         $this->CommonInterface = $CommonInterface;
     }
-    public function findMemberByUid($uid)
-    {
+    // public function findMemberByUid($uid)
+    // {
 
-        $response = Http::get(config('gateway_api_base') . 'findMemberByUid/' . $uid);
-        $checkPerson = null;
-        if ($response->successful()) {
-            $responseData = $response->json();
-            $checkPerson = $responseData['data'];
-        }
-        return $checkPerson;
-    }
+    //     $reference = explode(",",$uid);
+       
+    //     $response = Http::post(config('gateway_api_base') . 'findMemberByUid',$reference);
+    //     $checkPerson = null;
+    //     if ($response->successful()) {
+    //         $responseData = $response->json();
+    //         $checkPerson = $responseData['data'];
+    //     }
+    //     return $checkPerson;
+    // }
     public function findCredential($datas)
     {
         Log::info('PersonService > findCredential function Inside.' . json_encode($datas));
@@ -61,7 +63,7 @@ class PersonService
 
         if ($checkPersonMobile && !$checkPersonEmail) {
             $personMobileUid = $checkPersonMobile->uid;
-            $checkPersonMobileAsMember = $this->findMemberByUid($personMobileUid);
+            $checkPersonMobileAsMember = $this->memberInterface->findMemberDataByUid($personMobileUid);
 
             if ($checkPersonMobileAsMember) {
                 $result = ['type' => 11, 'memberMobile' => $checkPersonMobileAsMember];
@@ -70,7 +72,8 @@ class PersonService
             }
         } elseif (!$checkPersonMobile && $checkPersonEmail) {
             $personEmailUid = $checkPersonEmail->uid;
-            $checkPersonEmailAsMember = $this->findMemberByUid($personEmailUid);
+
+            $checkPersonEmailAsMember = $this->memberInterface->findMemberDataByUid($personEmailUid);
             if ($checkPersonEmailAsMember) {
                 $result = ['type' => 10, 'memberEmail' => $checkPersonEmail];
             } else {
@@ -80,8 +83,8 @@ class PersonService
             $personMobileUid = $checkPersonMobile->uid;
             $personEmailUid = $checkPersonEmail->uid;
 
-            $checkPersonMobileAsMember = $this->findMemberByUid($personMobileUid);
-            $checkPersonEmailAsMember = $this->findMemberByUid($personEmailUid);
+            $checkPersonMobileAsMember = $this->memberInterface->findMemberDataByUid($personMobileUid);
+            $checkPersonEmailAsMember = $this->memberInterface->findMemberDataByUid($personEmailUid);
 
             if ($personMobileUid == $personEmailUid) {
 
